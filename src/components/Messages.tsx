@@ -103,7 +103,7 @@ const Messages: FC<MessagesProps> = ({
                 })}
               >
                 <Image
-                  alt=""
+                  alt={`${chatPartner.name}`}
                   fill
                   src={
                     isCurrentUser ? (sessionImg as string) : chatPartner.image

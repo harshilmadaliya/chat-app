@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     // check if user is already added
     const isAlreadyAdded = (await fetchRedis(
       "sismember", // sismember is check the same value is exiest or not
-      `user:${idToAdd}:incoming_friend_requestd`,
+      `user:${idToAdd}:incoming_friend_requests`,
       session.user.id
     )) as 0 | 1;
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     )) as 0 | 1;
 
     if (isAlreadyFriends) {
-      return new Response("user is Already friend", { status: 400 });
+      return new Response("You both are Already friends", { status: 400 });
     }
 
     // valid request , sent friend request
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       "incoming_friend_requests",
       { senderId: session.user.id, senderEmail: session.user.email }
     );
-
+ 
     await db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id);
 
     return new Response("OK");

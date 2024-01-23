@@ -64,15 +64,15 @@ const FriendRequest: FC<FriendsRequestProps> = ({
   return (
     <>
       {friendRequests.length === 0 ? (
-        <p className="text-sm text-zinc-500">Nothing to show here...</p>
+        <p className="text-sm text-zinc-500">No any friend request...</p>
       ) : (
-        friendRequests.map((data : IncomingFriendRequest) => (
+        friendRequests.map((data) => (
           <>
             <div key={data.senderId} className="md:flex gap-4 items-center">
               <div className="flex gap-4 ">
                 <div className="w-9 h-9 md:h-[40px] md:w-[42px]">
                   <Image
-                    alt=" jjkkj"
+                    alt={`Profile Picture`}
                     src={`${data.senderImg}` }
                     width={42}
                     height={42}

@@ -1,13 +1,11 @@
 "use client";
 import { pusherClient } from "@/lib/pusher";
 import { chatHrefConstructor, toPusherKey } from "@/lib/utiles";
-import { Divide, Trash2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { FC, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import UnseenChatToast from "./UnseenChatToast";
 import Image from "next/image";
-import axios from "axios";
 
 interface SidebarChatListProps {
   friends: User[];
@@ -23,6 +21,7 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
   const [unseenMessages, setunseenMessages] = useState<Message[]>([]);
   const router = useRouter();
   const pathname = usePathname();
+  const [activeChats, setactiveChats] = useState<User[]>(friends)
 
   // const deletefriend = async (friendId: string, sessionId: string) => {
   //   console.log("delete");
@@ -70,8 +69,9 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
 
       setunseenMessages((prev) => [...prev, message]);
     };
-    const newFriendHandler = () => {
-      router.refresh();
+    const newFriendHandler = (newFriend : User) => {
+      // router.refresh();
+      setactiveChats ((prev) => [...prev , newFriend])
     };
 
     pusherClient.bind("new_message", chatHandler);
@@ -97,7 +97,7 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
       role="list"
       className="max-h-[25rem] w-full overflow-y-auto -m-2 space-y-1"
     >
-      {friends.sort().map((friend) => {
+      {activeChats.sort().map((friend) => {
         const unseenMessagesCount = unseenMessages.filter((unseenMsg) => {
           return unseenMsg.senderId === friend.id;
         }).length;
@@ -113,7 +113,7 @@ const SidebarChatList: FC<SidebarChatListProps> = ({ friends, sessionId }) => {
             >
               <Image
                 src={friend.image}
-                alt=""
+                alt={`${friend.name}`}
                 width={32}
                 height={32}
                 className="rounded-full"

@@ -49,10 +49,13 @@ const page = async ({ params }: PageProps) => {
     notFound();
   }
   const chatPartnerId = user.id === userId1 ? userId2 : userId1;
-  const chatPartner = (await db.get(`user:${chatPartnerId}`)) as User;
+  // const chatPartner = (await db.get(`user:${chatPartnerId}`)) as User;
+  const chatPartnerRaw = (await fetchRedis(
+    "get",
+    `user:${chatPartnerId}`
+  )) as string;
+  const chatPartner = JSON.parse(chatPartnerRaw) as User
   const initialMessages = await getChatMessages(chatId);
-
-
 
   return (
     <div className="flex-1 md:m-3 mt-14 mx-3 justify-between flex flex-col h-full max-h-[calc(100vh-6rem)]">
@@ -64,7 +67,7 @@ const page = async ({ params }: PageProps) => {
                 fill
                 referrerPolicy="no-referrer"
                 src={chatPartner.image}
-                alt={`${chatPartner.name} profile picture`}
+                alt={`${chatPartner.name}`}
                 className="rounded-full"
               />
             </div>
@@ -77,7 +80,9 @@ const page = async ({ params }: PageProps) => {
               </span>
             </div>
 
-            <span className="text-sm md:text-xs text-gray-600">{chatPartner.email}</span>
+            <span className="text-sm md:text-xs text-gray-600">
+              {chatPartner.email}
+            </span>
           </div>
         </div>
       </div>

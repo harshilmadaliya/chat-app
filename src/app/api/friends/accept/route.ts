@@ -21,28 +21,58 @@ export async function POST(req: Request) {
     // const isAlreadyFriends = await fetchRedis(
     //   "sismember",
     //   `user:${session.user.id}:friends`
-    // );
+    // ) as string;
+
     // if (isAlreadyFriends) {
-    //   return new Response("already friends", { status: 401 });
+    //   return new Response("You both Already friends", { status: 401 });
     // }
-    const hasFriendRequest = await fetchRedis('sismember' , `user:${session.user.id}:incoming_friend_requests`,idToAdd)
+
+    const hasFriendRequest = await fetchRedis(
+      "sismember",
+      `user:${session.user.id}:incoming_friend_requests`,
+      idToAdd
+    );
     if (!hasFriendRequest) {
-      return new Response('No friend request' , {status:400})
+      return new Response("No friend request", { status: 400 });
     }
 
-    pusherServer.trigger(toPusherKey(`user:${idToAdd}:friends`) , 'new_friend' , {})
+    const [userRaw, friendRaw] = (await Promise.all([
+      fetchRedis("get", `user:${session.user.id}`),
+      fetchRedis("get", `user:${idToAdd}`),
+    ])) as [string, string];
 
-    await db.sadd(`user:${session.user.id}:friends`,idToAdd)
-    await db.sadd(`user:${idToAdd}:friends`, session.user.id)
+    const user = JSON.parse(userRaw) as User;
+    const friend = JSON.parse(friendRaw) as User;
+
+    await Promise.all([
+      pusherServer.trigger(
+        toPusherKey(`user:${idToAdd}:friends`),
+        "new_friend",
+        user
+      ),
+      pusherServer.trigger(
+        toPusherKey(`user:${session.user.id}:friends`),
+        "new_friend",
+        friend
+      ),
+      db.sadd(`user:${session.user.id}:friends`, idToAdd),
+      db.sadd(`user:${idToAdd}:friends`, session.user.id),
+      db.srem(`user:${session.user.id}:incoming_friend_requests`, idToAdd)
+    ]);
+
+    // pusherServer.trigger(toPusherKey(`user:${idToAdd}:friends`) , 'new_friend' , {})
+
+    // await db.sadd(`user:${session.user.id}:friends`,idToAdd)
+    // await db.sadd(`user:${idToAdd}:friends`, session.user.id)
 
     // await db.srem(`user:${idToAdd}:outbound_incoming_friend_requests` , session.user.id)
-    await db.srem(`user:${session.user.id}:incoming_friend_requests` , idToAdd)
-    
-    return new Response('ok')
+    // await db.srem(`user:${session.user.id}:incoming_friend_requests` , idToAdd)
+
+    return new Response("ok");
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return new Response('Invalid request payload' , {status : 422})
+      return new Response("Invalid request payload", { status: 422 });
     }
-    return new Response('Invalid request', { status:400})
+    return new Response("Invalid request", { status: 400 });
   }
 }
