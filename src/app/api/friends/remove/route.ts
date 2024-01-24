@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     }
     // const { id: friendId } = z.object({ id: z.string() }).parse(body);
 
-    pusherServer.trigger(toPusherKey(`user:${body.friendId}:friends`) , 'remove_friend' , {})
+    await pusherServer.trigger(toPusherKey(`user:${body.friendId}:friends`) , 'remove_friend' , {})
 
     await db.srem(`user:${session.user.id}:friends`, body.friendId);
     await db.srem(`user:${body.friendId}:friends`, session.user.id);

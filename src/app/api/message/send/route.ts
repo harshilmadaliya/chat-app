@@ -50,12 +50,12 @@ export async function POST(req: Request) {
     // All valid , send the message
 
     // notify all connected chat room clients
-    pusherServer.trigger(
+    await pusherServer.trigger(
       toPusherKey(`chat:${chatId}`),
       "incoming-message",
       message
     );
-    pusherServer.trigger(toPusherKey(`user:${friendId}:chats`), "new_message", {
+    await pusherServer.trigger(toPusherKey(`user:${friendId}:chats`), "new_message", {
       ...message,
       senderImg: sender.image,
       senderName: sender.name,
